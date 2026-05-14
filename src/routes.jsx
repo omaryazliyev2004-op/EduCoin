@@ -26,7 +26,7 @@ export const router = createBrowserRouter([
       { path: "teachers", element: <Teachers /> },
       { path: "classes", element: <Class /> },
       { path: "students", element: <Students /> },
-      { path: "gifts", element: <Sovgalar /> },
+      { path: "sovgalar", element: <Sovgalar /> },
       { path: "settings", element: <Settings /> },
     ],
   },
