@@ -15,7 +15,7 @@ export default function Sidebar() {
 
     const mainNav = [
         { to: "/dashboard", icon: <Home size={20} />, label: "Asosiy", end: true },
-        { to: "/dashboard/teachers", icon: <Users size={20} />, label: "O'qituvchilar" },
+        { to: "/dashboard/teachers", icon: <UserSquare2 size={20} />, label: "O'qituvchilar" },
         { to: "/dashboard/groups", icon: <Users size={20} />, label: "Guruhlar" },
         { to: "/dashboard/students", icon: <GraduationCap size={20} />, label: "Talabalar" },
         { to: "/dashboard/sovgalar", icon: <Gift size={20} />, label: "Sov'g'alar" },
@@ -35,6 +35,15 @@ export default function Sidebar() {
     ]
 
     return (
+        <>
+        {showManagement && (
+            <button
+                type="button"
+                aria-label="Boshqarish menusini yopish"
+                onClick={() => setShowManagement(false)}
+                className="fixed inset-0 z-40 cursor-default bg-transparent"
+            />
+        )}
         <aside
             className={`${collapsed ? "w-[84px]" : "w-[260px]"} bg-white border-r border-gray-100 flex flex-col shrink-0 transition-all duration-300 relative h-screen z-50 shadow-sm`}
         >
@@ -51,10 +60,11 @@ export default function Sidebar() {
                         key={item.to}
                         to={item.to}
                         end={item.end}
+                        onClick={() => setShowManagement(false)}
                         className={({ isActive }) =>
                             `w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-[14.5px] font-semibold transition-all duration-200 group relative
                             ${collapsed ? "justify-center" : ""}
-                            ${isActive
+                            ${isActive && !showManagement
                                 ? "bg-violet-600 text-white shadow-xl shadow-violet-200 scale-[1.02]"
                                 : "text-gray-500 hover:bg-violet-50 hover:text-violet-600 hover:translate-x-1"}`
                         }
@@ -161,5 +171,6 @@ export default function Sidebar() {
                 </div>
             </div>
         </aside>
+        </>
     )
 }
