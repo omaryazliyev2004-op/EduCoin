@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { RefreshCw, Plus, Trash2, Pencil, X } from "lucide-react"
+import { Plus, Trash2, Pencil, X } from "lucide-react"
 
 const filialFilters = [
     "AiCoder markazi",
@@ -63,11 +63,9 @@ export default function Xonalar() {
         <div>
             {/* Top bar */}
             <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2">
+                <div>
                     <h2 className="text-[20px] font-bold text-[#1f2d5a]">Xonalar</h2>
-                    <button className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-gray-100 text-gray-400 transition-all">
-                        <RefreshCw size={15} />
-                    </button>
+                    <p className="text-[13px] text-gray-500">Markazlardagi mavjud xonalar ro'yxati</p>
                 </div>
                 <button
                     onClick={openAdd}
@@ -135,22 +133,29 @@ export default function Xonalar() {
 
             {/* Right Drawer */}
             <div
-                className={`fixed top-0 right-0 h-full w-[340px] bg-white shadow-2xl z-[300] flex flex-col
+                className={`fixed top-0 right-0 h-full w-[400px] bg-white shadow-2xl z-[300] flex flex-col
                     transition-transform duration-300 ease-in-out
                     ${showDrawer ? "translate-x-0" : "translate-x-full"}`}
             >
-                <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-                    <h3 className="text-[16px] font-bold text-[#1f2d5a]">
-                        {editRoom ? "Xonani tahrirlash" : "Xonani qo'shish"}
-                    </h3>
+                {/* Drawer Header */}
+                <div className="flex items-start justify-between px-6 pt-6 pb-4 border-b border-gray-50">
+                    <div>
+                        <h3 className="text-[17px] font-bold text-gray-800">
+                            {editRoom ? "Xonani tahrirlash" : "Xonani qo'shish"}
+                        </h3>
+                        <p className="text-[12.5px] text-gray-400 mt-0.5">
+                            Bu yerda siz yangi xona ma'lumotlarini kiritishingiz mumkin.
+                        </p>
+                    </div>
                     <button
                         onClick={handleClose}
-                        className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-all"
+                        className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-all mt-0.5"
                     >
                         <X size={16} />
                     </button>
                 </div>
 
+                {/* Drawer Body */}
                 <div className="flex-1 px-6 py-6 space-y-5 overflow-y-auto">
                     <div>
                         <label className="text-[13px] font-semibold text-gray-700 mb-2 block">
@@ -160,8 +165,8 @@ export default function Xonalar() {
                             type="text"
                             value={form.name}
                             onChange={e => setForm({ ...form, name: e.target.value })}
-                            placeholder="Xona nomi"
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[13px] text-gray-700 placeholder-gray-300 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all"
+                            placeholder="Xona nomi (masalan: Room 101)"
+                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-[13px] text-gray-700 placeholder-gray-300 focus:outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-50 transition-all"
                         />
                     </div>
                     <div>
@@ -173,11 +178,13 @@ export default function Xonalar() {
                             value={form.capacity}
                             onChange={e => setForm({ ...form, capacity: e.target.value })}
                             placeholder="Masalan: 20"
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[13px] text-gray-700 placeholder-gray-300 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all"
+                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-[13px] text-gray-700 placeholder-gray-300 focus:outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-50 transition-all"
                         />
+                        <p className="text-[11.5px] text-gray-400 mt-1.5 ml-1">Ushbu xonaga sig'adigan maksimal o'quvchilar soni.</p>
                     </div>
                 </div>
 
+                {/* Drawer Footer */}
                 <div className="px-6 py-5 border-t border-gray-100 flex gap-3">
                     <button
                         onClick={handleClose}

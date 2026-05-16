@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 // Management components
@@ -26,15 +25,9 @@ const tabs = [
 
 export default function Settings() {
     const [searchParams, setSearchParams] = useSearchParams()
-    const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "kurslar")
-
-    useEffect(() => {
-        const tabFromUrl = searchParams.get("tab")
-        if (tabFromUrl) setActiveTab(tabFromUrl)
-    }, [searchParams])
+    const activeTab = searchParams.get("tab") || "kurslar"
 
     const handleTabChange = (key) => {
-        setActiveTab(key)
         setSearchParams({ tab: key })
     }
 

@@ -2,7 +2,7 @@ import { useState } from "react"
 import { NavLink, useNavigate } from "react-router-dom"
 import {
     Zap, Home, Users, BookOpen,
-    GraduationCap, Gift, ClipboardList, ChevronLeft, Wallet,
+    GraduationCap, Gift, ClipboardList, ChevronLeft,
     Layout, Crown, LayoutGrid, Building2, UserSquare2,
     ListTodo, Shield, Coins, Send,
     MessageCircle, ClipboardCheck, ChevronRight, X
@@ -16,10 +16,9 @@ export default function Sidebar() {
     const mainNav = [
         { to: "/dashboard", icon: <Home size={20} />, label: "Asosiy", end: true },
         { to: "/dashboard/teachers", icon: <Users size={20} />, label: "O'qituvchilar" },
-        { to: "/dashboard/classes", icon: <Users size={20} />, label: "Guruhlar" },
+        { to: "/dashboard/groups", icon: <Users size={20} />, label: "Guruhlar" },
         { to: "/dashboard/students", icon: <GraduationCap size={20} />, label: "Talabalar" },
         { to: "/dashboard/sovgalar", icon: <Gift size={20} />, label: "Sov'g'alar" },
-        { to: "/dashboard/moliya", icon: <Wallet size={20} />, label: "Moliya", hasCrown: true },
     ]
 
     const managementItems = [

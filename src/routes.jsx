@@ -25,6 +25,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: "teachers", element: <Teachers /> },
       { path: "classes", element: <Class /> },
+      { path: "groups", element: <Class /> },
       { path: "students", element: <Students /> },
       { path: "sovgalar", element: <Sovgalar /> },
       { path: "settings", element: <Settings /> },

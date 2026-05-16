@@ -1,12 +1,30 @@
 import { useState } from 'react'
-import { Plus, Trash2, Pencil, X, Clock, Calendar, BadgeDollarSign } from "lucide-react"
+import { Plus, Trash2, Pencil, X, Clock, Calendar, CreditCard, ChevronDown } from "lucide-react"
 
+// Card background colors for course grid
 const courseColors = [
     { bg: "bg-white",     border: "border-gray-100",   tag: "bg-gray-50" },
     { bg: "bg-purple-50", border: "border-purple-100", tag: "bg-purple-100/60" },
     { bg: "bg-yellow-50", border: "border-yellow-100", tag: "bg-yellow-100/60" },
     { bg: "bg-green-50",  border: "border-green-100",  tag: "bg-green-100/60" },
 ]
+
+// Color picker options for courses
+const colorOptions = [
+    "#1e293b", // dark slate
+    "#7c3aed", // violet
+    "#dc2626", // red
+    "#ea580c", // orange
+    "#16a34a", // green
+    "#0891b2", // cyan
+    "#2563eb", // blue
+    "#9333ea", // purple
+    "#db2777", // pink
+]
+
+// Dropdown options
+const durationOptions = ["30 min", "45 min", "60 min", "90 min", "120 min"]
+const monthOptions    = ["1 oy", "2 oy", "3 oy", "4 oy", "6 oy", "12 oy"]
 
 const kursFilials = ["Filial 1", "Filial 2", "Arxiv"]
 
@@ -19,38 +37,256 @@ const initialCourses = [
     { id: 6, name: "Human Resources Manager", desc: "A little about the company and the team that you'll be working with.", duration: "90 min", months: "3 oy", price: "1 000 000 mln", colorIdx: 1 },
 ]
 
-const drawerFields = [
-    { key: "name",     label: "Kurs nomi",    placeholder: "Human Resources Manager",  type: "text" },
-    { key: "desc",     label: "Tavsif",       placeholder: "Kurs haqida qisqacha...",  type: "textarea" },
-    { key: "duration", label: "Davomiyligi",  placeholder: "Masalan: 90 min",          type: "text" },
-    { key: "months",   label: "Muddat",       placeholder: "Masalan: 3 oy",            type: "text" },
-    { key: "price",    label: "Narxi",        placeholder: "Masalan: 1 000 000 mln",   type: "text" },
-]
+const emptyForm = {
+    name: "", price: "", duration: "", months: "",
+    desc: "", filials: ["Filial 1", "Filial 2"], color: "#7c3aed"
+}
 
+// ─── Custom Select ────────────────────────────────────────────────
+function CustomSelect({ value, onChange, options, placeholder }) {
+    const [open, setOpen] = useState(false)
+    return (
+        <div className="relative">
+            <button
+                type="button"
+                onClick={() => setOpen(!open)}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-gray-200 text-[13px] text-gray-500 bg-white hover:border-violet-300 transition-all focus:outline-none"
+            >
+                <span className={value ? "text-gray-700" : "text-gray-400"}>{value || placeholder}</span>
+                <ChevronDown size={15} className={`text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
+            </button>
+            {open && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-xl shadow-xl z-10 overflow-hidden">
+                    {options.map(opt => (
+                        <button
+                            key={opt}
+                            type="button"
+                            onClick={() => { onChange(opt); setOpen(false) }}
+                            className={`w-full text-left px-4 py-2.5 text-[13px] hover:bg-violet-50 hover:text-violet-600 transition-all
+                                ${value === opt ? "bg-violet-50 text-violet-600 font-semibold" : "text-gray-600"}`}
+                        >
+                            {opt}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    )
+}
+
+// ─── Drawer ───────────────────────────────────────────────────────
+function KursDrawer({ open, onClose, editCourse, onSave }) {
+    const [form, setForm] = useState(editCourse || emptyForm)
+
+    const toggleFilial = (f) => {
+        setForm(prev => ({
+            ...prev,
+            filials: prev.filials.includes(f)
+                ? prev.filials.filter(x => x !== f)
+                : [...prev.filials, f]
+        }))
+    }
+
+    const selectAll = () => setForm(prev => ({ ...prev, filials: kursFilials }))
+
+    return (
+        <>
+            {/* Backdrop */}
+            <div
+                onClick={onClose}
+                className={`fixed inset-0 z-[200] bg-black/30 transition-opacity duration-300
+                    ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+            />
+
+            {/* Drawer panel */}
+            <div
+                className={`fixed top-0 right-0 h-full w-[420px] bg-white shadow-2xl z-[300] flex flex-col
+                    transition-transform duration-300 ease-in-out
+                    ${open ? "translate-x-0" : "translate-x-full"}`}
+            >
+                {/* Header */}
+                <div className="flex items-start justify-between px-6 pt-6 pb-4">
+                    <div>
+                        <h3 className="text-[17px] font-bold text-gray-800">
+                            {editCourse ? "Kursni tahrirlash" : "Kurs qo'shish"}
+                        </h3>
+                        <p className="text-[12.5px] text-gray-400 mt-0.5">
+                            Bu yerda siz yangi Sovg'a qo'shishingiz mumkin.
+                        </p>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-all mt-0.5"
+                    >
+                        <X size={16} />
+                    </button>
+                </div>
+
+                {/* Body */}
+                <div className="flex-1 overflow-y-auto px-6 py-2 space-y-5">
+
+                    {/* Nomi */}
+                    <div>
+                        <label className="text-[13px] font-semibold text-gray-700 mb-1.5 block">Nomi</label>
+                        <input
+                            type="text"
+                            value={form.name}
+                            onChange={e => setForm({ ...form, name: e.target.value })}
+                            placeholder="HR Manager..."
+                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-[13px] text-gray-700 placeholder-gray-300 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-50 transition-all"
+                        />
+                    </div>
+
+                    {/* Filiallar */}
+                    <div>
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="text-[13px] font-semibold text-gray-700">
+                                Kurs mavjud boledigon filiallar
+                            </label>
+                            <button
+                                onClick={selectAll}
+                                className="text-[12px] font-semibold text-violet-600 hover:text-violet-700 transition-colors"
+                            >
+                                Hammasini tanlash
+                            </button>
+                        </div>
+                        <div className="space-y-2">
+                            {kursFilials.map(f => (
+                                <label key={f} className="flex items-center gap-2.5 cursor-pointer group">
+                                    <div
+                                        onClick={() => toggleFilial(f)}
+                                        className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0
+                                            ${form.filials?.includes(f)
+                                                ? "bg-violet-600 border-violet-600"
+                                                : "border-gray-300 hover:border-violet-400"
+                                            }`}
+                                    >
+                                        {form.filials?.includes(f) && (
+                                            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                                <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        )}
+                                    </div>
+                                    <span className="text-[13px] text-gray-600 group-hover:text-gray-800 transition-colors">{f}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Dars davomiyligi */}
+                    <div>
+                        <label className="text-[13px] font-semibold text-gray-700 mb-1.5 block">Dars davomiyligi</label>
+                        <CustomSelect
+                            value={form.duration}
+                            onChange={v => setForm({ ...form, duration: v })}
+                            options={durationOptions}
+                            placeholder="Tanlang"
+                        />
+                    </div>
+
+                    {/* Kurs davomiyligi */}
+                    <div>
+                        <label className="text-[13px] font-semibold text-gray-700 mb-1.5 block">Kurs davomiyligi (oylarda)</label>
+                        <CustomSelect
+                            value={form.months}
+                            onChange={v => setForm({ ...form, months: v })}
+                            options={monthOptions}
+                            placeholder="Tanlang"
+                        />
+                    </div>
+
+                    {/* Narx */}
+                    <div>
+                        <label className="text-[13px] font-semibold text-gray-700 mb-1.5 block">Narx</label>
+                        <div className="relative">
+                            <CreditCard size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300" />
+                            <input
+                                type="text"
+                                value={form.price}
+                                onChange={e => setForm({ ...form, price: e.target.value })}
+                                placeholder="Narxini kiriting"
+                                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-[13px] text-gray-700 placeholder-gray-300 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-50 transition-all"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                        <label className="text-[13px] font-semibold text-gray-700 mb-1.5 block">Description</label>
+                        <textarea
+                            rows={4}
+                            value={form.desc}
+                            onChange={e => setForm({ ...form, desc: e.target.value })}
+                            placeholder="A little about the company and the team that you'll be working with."
+                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-[13px] text-gray-700 placeholder-gray-300 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-50 transition-all resize-none"
+                        />
+                        <p className="text-[11.5px] text-gray-400 mt-1">This is a hint text to help user.</p>
+                    </div>
+
+                    {/* Rangi */}
+                    <div>
+                        <label className="text-[13px] font-semibold text-gray-700 mb-0.5 block">Rangi</label>
+                        <p className="text-[12px] text-gray-400 mb-3">The color you choose will be displayed to users and in the list of roles.</p>
+                        <div className="flex items-center gap-2.5 flex-wrap">
+                            {colorOptions.map(color => (
+                                <button
+                                    key={color}
+                                    type="button"
+                                    onClick={() => setForm({ ...form, color })}
+                                    className={`w-8 h-8 rounded-full transition-all hover:scale-110 active:scale-95
+                                        ${form.color === color ? "ring-2 ring-offset-2 ring-violet-500 scale-110" : ""}`}
+                                    style={{ backgroundColor: color }}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="px-6 py-5 border-t border-gray-100 flex gap-3">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 py-3 rounded-xl border border-gray-200 text-[13px] font-semibold text-gray-500 hover:bg-gray-50 transition-all"
+                    >
+                        Bekor qilish
+                    </button>
+                    <button
+                        onClick={() => onSave(form)}
+                        className="flex-1 py-3 rounded-xl bg-violet-600 text-white text-[13px] font-bold hover:bg-violet-700 shadow-lg shadow-violet-100 transition-all active:scale-95"
+                    >
+                        Saqlash
+                    </button>
+                </div>
+            </div>
+        </>
+    )
+}
+
+// ─── Main Component ───────────────────────────────────────────────
 export default function Kurslar() {
     const [activeFilial, setActiveFilial] = useState("Filial 1")
     const [courses, setCourses] = useState(initialCourses)
     const [showDrawer, setShowDrawer] = useState(false)
     const [editCourse, setEditCourse] = useState(null)
-    const [form, setForm] = useState({ name: "", desc: "", duration: "", months: "", price: "" })
 
     const openAdd = () => {
         setEditCourse(null)
-        setForm({ name: "", desc: "", duration: "", months: "", price: "" })
         setShowDrawer(true)
     }
 
     const openEdit = (course) => {
         setEditCourse(course)
-        setForm({ name: course.name, desc: course.desc, duration: course.duration, months: course.months, price: course.price })
         setShowDrawer(true)
     }
 
-    const handleClose = () => setShowDrawer(false)
+    const handleClose = () => {
+        setShowDrawer(false)
+        setEditCourse(null)
+    }
 
     const handleDelete = (id) => setCourses(courses.filter(c => c.id !== id))
 
-    const handleSave = () => {
+    const handleSave = (form) => {
         if (!form.name.trim()) return
         if (editCourse) {
             setCourses(courses.map(c => c.id === editCourse.id ? { ...c, ...form } : c))
@@ -58,7 +294,7 @@ export default function Kurslar() {
             const colorIdx = courses.length % courseColors.length
             setCourses([...courses, { id: Date.now(), ...form, colorIdx }])
         }
-        setShowDrawer(false)
+        handleClose()
     }
 
     return (
@@ -128,82 +364,20 @@ export default function Kurslar() {
                                 <span className={`flex items-center gap-1 text-[11px] font-semibold text-gray-500 px-2 py-1 rounded-lg ${color.tag}`}>
                                     <Calendar size={11} /> {course.months}
                                 </span>
-                                <span className={`flex items-center gap-1 text-[11px] font-semibold text-gray-500 px-2 py-1 rounded-lg ${color.tag}`}>
-                                    <BadgeDollarSign size={11} /> {course.price}
-                                </span>
                             </div>
                         </div>
                     )
                 })}
             </div>
 
-            {/* Backdrop */}
-            <div
-                onClick={handleClose}
-                className={`fixed inset-0 z-[200] bg-black/20 transition-opacity duration-300
-                    ${showDrawer ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+            {/* Drawer */}
+            <KursDrawer
+                key={editCourse?.id || "new-course"}
+                open={showDrawer}
+                onClose={handleClose}
+                editCourse={editCourse}
+                onSave={handleSave}
             />
-
-            {/* Right Drawer */}
-            <div
-                className={`fixed top-0 right-0 h-full w-[360px] bg-white shadow-2xl z-[300] flex flex-col
-                    transition-transform duration-300 ease-in-out
-                    ${showDrawer ? "translate-x-0" : "translate-x-full"}`}
-            >
-                <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-                    <h3 className="text-[16px] font-bold text-[#1f2d5a]">
-                        {editCourse ? "Kursni tahrirlash" : "Kurs qo'shish"}
-                    </h3>
-                    <button
-                        onClick={handleClose}
-                        className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-all"
-                    >
-                        <X size={16} />
-                    </button>
-                </div>
-
-                <div className="flex-1 px-6 py-6 space-y-4 overflow-y-auto">
-                    {drawerFields.map(field => (
-                        <div key={field.key}>
-                            <label className="text-[13px] font-semibold text-gray-700 mb-2 block">
-                                {field.label} <span className="text-red-500">*</span>
-                            </label>
-                            {field.type === "textarea" ? (
-                                <textarea
-                                    rows={3}
-                                    value={form[field.key]}
-                                    onChange={e => setForm({ ...form, [field.key]: e.target.value })}
-                                    placeholder={field.placeholder}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[13px] text-gray-700 placeholder-gray-300 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all resize-none"
-                                />
-                            ) : (
-                                <input
-                                    type="text"
-                                    value={form[field.key]}
-                                    onChange={e => setForm({ ...form, [field.key]: e.target.value })}
-                                    placeholder={field.placeholder}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[13px] text-gray-700 placeholder-gray-300 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all"
-                                />
-                            )}
-                        </div>
-                    ))}
-                </div>
-
-                <div className="px-6 py-5 border-t border-gray-100 flex gap-3">
-                    <button
-                        onClick={handleClose}
-                        className="flex-1 py-3 rounded-xl border border-gray-200 text-[13px] font-semibold text-gray-500 hover:bg-gray-50 transition-all"
-                    >
-                        Bekor qilish
-                    </button>
-                    <button
-                        onClick={handleSave}
-                        className="flex-1 py-3 rounded-xl bg-violet-600 text-white text-[13px] font-bold hover:bg-violet-700 shadow-lg shadow-violet-100 transition-all active:scale-95"
-                    >
-                        Saqlash
-                    </button>
-                </div>
-            </div>
         </div>
     )
 }
