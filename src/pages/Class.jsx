@@ -80,7 +80,7 @@ export default function Class() {
 
     // Edit drawer
     const [editDrawer, setEditDrawer] = useState(false)
-    const [editForm, setEditForm] = useState({ name: "" })
+    const [editForm, setEditForm] = useState({ name: "", course_id: "", room_id: "", maxStudent: 20, days: [] })
     const [editSaving, setEditSaving] = useState(false)
 
     const handleActionClick = (event, id) => {
@@ -92,19 +92,48 @@ export default function Class() {
         setActionAnchorEl(null)
     }
 
-    const openEditDrawer = () => {
-        const g = groups.find(gr => gr.id === selectedGroupId)
-        if (g) setEditForm({ name: g.name })
+    const openEditDrawer = async () => {
         setEditDrawer(true)
         handleActionClose()
+        loadFormData()
+        try {
+            const res = await api.get(`/groups/${selectedGroupId}`)
+            const g = res.data?.data || res.data
+            setEditForm({
+                name: g.name || "",
+                course_id: g.course?.id || g.course_id || "",
+                room_id: g.room?.id || g.room_id || "",
+                maxStudent: g.max_student || 20,
+                days: g.week_day ? g.week_day.map(wd => {
+                    const found = weekDays.find(d => d.enum === wd)
+                    return found ? found.short : wd
+                }) : []
+            })
+        } catch (err) {
+            console.error("Guruh ma'lumotini olishda xato:", err)
+            // Fallback
+            const g = groups.find(gr => gr.id === selectedGroupId)
+            if (g) setEditForm({ name: g.name, course_id: "", room_id: "", maxStudent: 20, days: [] })
+        }
     }
 
     const handleEditSave = async () => {
         if (!editForm.name.trim() || !selectedGroupId) return
         setEditSaving(true)
         try {
-            await api.patch(`/groups/${selectedGroupId}`, { name: editForm.name })
-            setGroups(prev => prev.map(g => g.id === selectedGroupId ? { ...g, name: editForm.name } : g))
+            const backendDays = editForm.days.map(dShort => {
+                const found = weekDays.find(wd => wd.short === dShort)
+                return found ? found.enum : "MONDAY"
+            })
+            
+            await api.patch(`/groups/${selectedGroupId}`, {
+                name: editForm.name,
+                course_id: Number(editForm.course_id),
+                room_id: Number(editForm.room_id),
+                max_student: Number(editForm.maxStudent),
+                week_day: backendDays
+            })
+            await loadAllData()
             setEditDrawer(false)
             setSelectedGroupId(null)
         } catch (err) {
@@ -904,15 +933,83 @@ export default function Class() {
                         </IconButton>
                     </div>
                     <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
-                        <label className="block">
-                            <span className="mb-2 block text-[13.5px] font-extrabold text-gray-700">Guruh nomi <span className="text-red-500">*</span></span>
+                        <FieldLabel label="Guruh nomi" required>
                             <input
                                 value={editForm.name}
-                                onChange={(e) => setEditForm({ name: e.target.value })}
+                                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                                 placeholder="Guruh nomi"
                                 className="h-10 w-full rounded-xl border border-gray-200 bg-white px-3 text-[14.5px] font-semibold text-gray-700 outline-none transition placeholder:text-gray-300 focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
                             />
-                        </label>
+                        </FieldLabel>
+
+                        <FieldLabel label="Kurs" required>
+                            <div className="relative">
+                                <select
+                                    value={editForm.course_id}
+                                    onChange={(event) => setEditForm({ ...editForm, course_id: event.target.value })}
+                                    className="h-10 w-full appearance-none rounded-xl border border-gray-200 bg-white px-3 pr-9 text-[14.5px] font-semibold text-gray-700 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
+                                >
+                                    <option value="">Tanlang</option>
+                                    {courses.map(c => (
+                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                            </div>
+                        </FieldLabel>
+
+                        <FieldLabel label="Xona" required>
+                            <div className="relative">
+                                <select
+                                    value={editForm.room_id}
+                                    onChange={(event) => setEditForm({ ...editForm, room_id: event.target.value })}
+                                    className="h-10 w-full appearance-none rounded-xl border border-gray-200 bg-white px-3 pr-9 text-[14.5px] font-semibold text-gray-700 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
+                                >
+                                    <option value="">Tanlang</option>
+                                    {rooms.map(r => (
+                                        <option key={r.id} value={r.id}>{r.name}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                            </div>
+                        </FieldLabel>
+
+                        <FieldLabel label="Maksimal talabalar soni" required>
+                            <input
+                                type="number"
+                                value={editForm.maxStudent}
+                                onChange={(event) => setEditForm({ ...editForm, maxStudent: event.target.value })}
+                                placeholder="Masalan: 15"
+                                className="h-10 w-full rounded-xl border border-gray-200 bg-white px-3 text-[14.5px] font-semibold text-gray-700 outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-50"
+                            />
+                        </FieldLabel>
+
+                        <div>
+                            <RequiredTitle>Dars kunlari</RequiredTitle>
+                            <div className="grid grid-cols-2 gap-2">
+                                {weekDays.map((day) => (
+                                    <button
+                                        key={day.short}
+                                        onClick={() => {
+                                            const newDays = editForm.days.includes(day.short)
+                                                ? editForm.days.filter((d) => d !== day.short)
+                                                : [...editForm.days, day.short]
+                                            setEditForm({ ...editForm, days: newDays })
+                                        }}
+                                        className={`flex h-10 items-center justify-center gap-2 rounded-xl border px-3 text-[13.5px] font-bold transition-all ${
+                                            editForm.days.includes(day.short)
+                                                ? "border-violet-300 bg-violet-50 text-violet-700"
+                                                : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                                        }`}
+                                    >
+                                        <div className={`flex h-4 w-4 items-center justify-center rounded border ${editForm.days.includes(day.short) ? "border-violet-600 bg-violet-600" : "border-gray-200 bg-white"}`}>
+                                            {editForm.days.includes(day.short) && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                                        </div>
+                                        {day.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                     <div className="flex items-center justify-end gap-3 border-t border-gray-100 px-5 py-4">
                         <Button

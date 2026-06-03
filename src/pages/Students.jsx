@@ -119,7 +119,7 @@ export default function Students() {
                 id: s.id,
                 name: s.full_name,
                 avatar: s.photo 
-                    ? `https://najot-edu.softwareengineer.uz/${s.photo}` 
+                    ? `https://najot-edu.softwareengineer.uz/files/${s.photo.replace(/^files\//, "").replace(/^\//, "")}` 
                     : `https://i.pravatar.cc/150?u=${s.id}`,
                 groups: s.groups || [],
                 phone: s.phone || "",

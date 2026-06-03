@@ -122,7 +122,7 @@ export default function Teachers() {
                 id: t.id,
                 name: t.full_name,
                 avatar: t.photo 
-                    ? `https://najot-edu.softwareengineer.uz/${t.photo}` 
+                    ? `https://najot-edu.softwareengineer.uz/files/${t.photo.replace(/^files\//, "").replace(/^\//, "")}` 
                     : `https://i.pravatar.cc/150?u=${t.id}`,
                 groups: t.groups || [],
                 phone: t.phone || "",

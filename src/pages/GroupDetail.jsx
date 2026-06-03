@@ -1452,7 +1452,7 @@ function InfoTab({ group, schedules }) {
                             {(group.teachers && group.teachers.length > 0 ? group.teachers : [{ full_name: "Biriktirilmagan" }]).map((t, i) => (
                                 <div key={t.id || i} className="flex flex-col items-center gap-2 min-w-[80px]">
                                     {t.photo ? (
-                                        <img src={`https://najot-edu.softwareengineer.uz/${t.photo}`} alt={t.full_name} className="h-14 w-14 shrink-0 rounded-full object-cover border-2 border-gray-100 shadow-sm" />
+                                        <img src={`https://najot-edu.softwareengineer.uz/files/${t.photo.replace(/^files\//, "").replace(/^\//, "")}`} alt={t.full_name} className="h-14 w-14 shrink-0 rounded-full object-cover border-2 border-gray-100 shadow-sm" />
                                     ) : (
                                         <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[18px] font-bold text-gray-500 border border-gray-200">
                                             {(t.full_name || "T").charAt(0)}
@@ -1611,7 +1611,7 @@ function InfoTab({ group, schedules }) {
                                     <div className="flex items-center gap-3">
                                         {group.teachers?.[0]?.photo ? (
                                             <img
-                                                src={`https://najot-edu.softwareengineer.uz/${group.teachers[0].photo}`}
+                                                src={`https://najot-edu.softwareengineer.uz/files/${group.teachers[0].photo.replace(/^files\//, "").replace(/^\//, "")}`}
                                                 alt="teacher"
                                                 className="w-10 h-10 rounded-full object-cover"
                                             />

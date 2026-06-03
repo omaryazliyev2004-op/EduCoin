@@ -4,6 +4,9 @@ import { ChevronLeft, CheckCircle2 } from "lucide-react"
 import { Alert, CircularProgress } from "@mui/material"
 import api from "../api"
 
+
+
+
 const TABS = [
     { key: "PENDING", label: "Kutayotganlar" },
     { key: "REJECTED", label: "Qaytarilganlar" },
@@ -32,6 +35,8 @@ export default function HomeworkChecking() {
         if (Array.isArray(value)) return value
         if (Array.isArray(value?.data)) return value.data
         if (Array.isArray(value?.data?.data)) return value.data.data
+        if (Array.isArray(value?.results)) return value.results
+        if (Array.isArray(value?.data?.results)) return value.data.results
         if (Array.isArray(value?.students)) return value.students
         return []
     }
@@ -40,9 +45,11 @@ export default function HomeworkChecking() {
         setLoading(true)
         setError("")
         try {
+            // Faqat bitta so'rov
             const res = await api.get(`/group/${id}/homework/${homeworkId}/results`)
-            console.log("Homework API Response:", res.data) // Debugging uchun
-            setResults(listOf(res.data))
+            const list = listOf(res.data)
+            console.log("Homework results:", list)
+            setResults(list)
         } catch (err) {
             console.error(err)
             setError(err.response?.data?.message || "Natijalarni yuklashda xatolik.")
@@ -95,8 +102,8 @@ export default function HomeworkChecking() {
     }
 
     // Filter results based on active tab
-    const filteredResults = activeTab === "NOT_SUBMITTED" 
-        ? getNotSubmittedStudents() 
+    const filteredResults = activeTab === "NOT_SUBMITTED"
+        ? getNotSubmittedStudents()
         : results.filter((r) => {
             const s = (r.status || "").toUpperCase();
             if (activeTab === "PENDING") return s === "PENDING"
@@ -107,7 +114,7 @@ export default function HomeworkChecking() {
 
     const getCount = (tabKey) => {
         if (tabKey === "NOT_SUBMITTED") return getNotSubmittedStudents().length;
-        
+
         return results.filter((r) => {
             const s = (r.status || "").toUpperCase();
             if (tabKey === "PENDING") return s === "PENDING"
@@ -148,19 +155,17 @@ export default function HomeworkChecking() {
                             <button
                                 key={tab.key}
                                 onClick={() => setActiveTab(tab.key)}
-                                className={`flex items-center gap-2 border-b-2 pb-4 text-[14.5px] font-bold transition-all ${
-                                    activeTab === tab.key
+                                className={`flex items-center gap-2 border-b-2 pb-4 text-[14.5px] font-bold transition-all ${activeTab === tab.key
                                         ? "border-[#10b981] text-[#1f2937]"
                                         : "border-transparent text-gray-400 hover:text-gray-600"
-                                }`}
+                                    }`}
                             >
                                 {tab.label}
                                 {count > 0 && (
-                                    <span className={`inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-full px-1.5 text-[12px] font-extrabold ${
-                                        tab.key === "PENDING" ? "bg-amber-400 text-gray-900" :
-                                        tab.key === "NOT_SUBMITTED" ? "bg-amber-400 text-gray-900" :
-                                        "bg-emerald-500 text-white"
-                                    }`}>
+                                    <span className={`inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-full px-1.5 text-[12px] font-extrabold ${tab.key === "PENDING" ? "bg-amber-400 text-gray-900" :
+                                            tab.key === "NOT_SUBMITTED" ? "bg-amber-400 text-gray-900" :
+                                                "bg-emerald-500 text-white"
+                                        }`}>
                                         {count}
                                     </span>
                                 )}
@@ -192,12 +197,28 @@ export default function HomeworkChecking() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredResults.map((row, idx) => (
-                                        <tr key={row.id || idx} className="border-b border-gray-50 text-[15px] font-semibold text-[#1f2937] transition hover:bg-gray-50/50 cursor-pointer">
-                                            <td className="px-4 py-4">{row.student?.full_name || row.student_name || "—"}</td>
-                                            <td className="px-4 py-4">{fmtDateTime(row.created_at || row.submitted_at)}</td>
-                                        </tr>
-                                    ))}
+                                    {filteredResults.map((row, idx) => {
+                                        const sId = row.student?.id || row.student_id;
+                                        return (
+                                            <tr
+                                                key={row.id || idx}
+                                                onClick={() => {
+                                                    if (sId) {
+                                                        navigate(`/dashboard/groups/${id}/homework/${homeworkId}/student/${sId}/review`, {
+                                                            state: {
+                                                                studentName: row.student?.full_name || row.student_name,
+                                                                homeworkTitle: homework.topic || "crm backend homework checking"
+                                                            }
+                                                        })
+                                                    }
+                                                }}
+                                                className="border-b border-gray-50 text-[15px] font-semibold text-[#1f2937] transition hover:bg-gray-50/50 cursor-pointer"
+                                            >
+                                                <td className="px-4 py-4">{row.student?.full_name || row.student_name || "—"}</td>
+                                                <td className="px-4 py-4">{fmtDateTime(row.created_at || row.submitted_at)}</td>
+                                            </tr>
+                                        )
+                                    })}
                                 </tbody>
                             </table>
                         </div>
