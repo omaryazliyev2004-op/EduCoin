@@ -102,28 +102,105 @@ export default function TaskReview() {
 
     useEffect(() => {
         if (isExam) {
-            // MOCK DATA FOR EXAM
-            setTaskInfo({
-                topic: "crm loyihasi",
-                links: ["1. backend github link", "2. frontend github link"]
-            })
-            setStudentInfo({
-                name: "Rahmonbergan Otabek o'g'li Mahmudov",
-                time: "22 May, 2026 09:32",
-                filesCount: 0,
-                status: "Kutayabti",
-                submittedLinks: [
-                    "1. https://github.com/uzbboos34-blip/CRM-Backend",
-                    "2. https://github.com/uzbboos34-blip/CRM-Frontent",
-                    "3. https://7-oy-xuep.vercel.app/login"
-                ]
-            })
-            setLoading(false)
+            fetchExamData()
         } else {
-            // REAL API FOR HOMEWORK
             fetchHomeworkData()
         }
     }, [id, taskType, taskId, studentId])
+
+    const fetchExamData = async () => {
+        try {
+            setLoading(true)
+            setError("")
+
+            // 1. Exam meta ma'lumoti
+            const examState = location.state?.exam || null
+            if (examState) {
+                setTaskInfo({
+                    topic: examState.topic || examState.lesson?.topic || examState.description || "Imtihon",
+                    links: examState.links || []
+                })
+            } else {
+                try {
+                    const examRes = await api.get(`/exams/group/${id}`)
+                    const list = Array.isArray(examRes.data) ? examRes.data
+                        : examRes.data?.data || examRes.data?.results || []
+                    const exam = list.find(e => String(e.id) === String(taskId))
+                    if (exam) {
+                        setTaskInfo({
+                            topic: exam.lesson?.topic || exam.description || exam.title || "Imtihon",
+                            links: exam.links || []
+                        })
+                    }
+                } catch (_) {
+                    setTaskInfo({ topic: "Imtihon", links: [] })
+                }
+            }
+
+            // 2. O'quvchi natijasi
+            let studentResult = null
+
+            // Try specific student result endpoint
+            try {
+                const res = await api.get(`/group/${id}/exams/${taskId}/result/${studentId}`)
+                studentResult = res.data?.data || res.data
+            } catch (_) {
+                // Fallback: list barcha natijalardan filter
+                try {
+                    const allRes = await api.get(`/group/${id}/exams/${taskId}/results`)
+                    const list = Array.isArray(allRes.data) ? allRes.data
+                        : allRes.data?.data || allRes.data?.results || []
+                    studentResult = list.find(r => {
+                        const sId = r.student?.id || r.student_id || r.id
+                        return String(sId) === String(studentId)
+                    })
+                } catch (__) {
+                    console.error("Imtihon natijasini yuklashda xato")
+                }
+            }
+
+            if (studentResult) {
+                const sObj = studentResult.student || studentResult
+                const name = sObj?.full_name || sObj?.name ||
+                    (sObj?.first_name ? `${sObj.first_name} ${sObj.last_name || ""}`.trim() : "Noma'lum")
+
+                const time = formatDateTime(
+                    studentResult.created_at ||
+                    studentResult.submitted_at ||
+                    studentResult.send_at ||
+                    studentResult.createdAt || null
+                )
+
+                const files = studentResult.files || studentResult.attachments || []
+                const rawLinks = studentResult.comment || studentResult.links ||
+                    studentResult.file_url || studentResult.description || ""
+                const rawStatus = (studentResult.status || "PENDING").toUpperCase()
+                const statusLabel = rawStatus === "PENDING" ? "Kutayabti"
+                    : rawStatus === "ACCEPTED" ? "Qabul qilingan"
+                        : rawStatus === "REJECTED" ? "Qaytarilgan"
+                            : rawStatus
+
+                setStudentInfo({
+                    name,
+                    time,
+                    filesCount: files.length,
+                    status: statusLabel,
+                    submittedLinks: parseLinks(rawLinks)
+                })
+
+                if (studentResult.grade !== undefined && studentResult.grade !== null) {
+                    setScore(Number(studentResult.grade))
+                }
+            } else {
+                setError("O'quvchi tomonidan yuborilgan javob topilmadi.")
+            }
+        } catch (err) {
+            console.error(err)
+            setError("Imtihon ma'lumotlarini yuklashda xatolik yuz berdi.")
+        } finally {
+            setLoading(false)
+        }
+    }
 
     const fetchHomeworkData = async () => {
         try {
@@ -207,10 +284,20 @@ export default function TaskReview() {
     const handleSubmit = async () => {
         if (isExam) {
             setSubmitting(true)
-            setTimeout(() => {
+            try {
+                await api.post(`/group/${id}/exams/${taskId}/check`, {
+                    studentId: Number(studentId),
+                    ball: score,
+                    comment: feedback
+                })
                 showToast(score >= 60 ? `Imtihon muvaffaqiyatli baholandi! Ball: ${score}` : `Imtihon qaytarildi. Ball: ${score}`, score >= 60 ? "success" : "warning")
                 setTimeout(() => navigate(-1), 1200)
-            }, 800)
+            } catch (err) {
+                console.error(err)
+                showToast("Baholashda xatolik yuz berdi", "error")
+            } finally {
+                setSubmitting(false)
+            }
             return
         }
 
