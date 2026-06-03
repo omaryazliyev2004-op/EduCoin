@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Pencil, Plus, Trash2, X } from "lucide-react"
+import { Button, IconButton, Tooltip } from "@mui/material"
 
 const emptyForm = { name: "", note: "" }
 
@@ -43,16 +44,32 @@ export default function BasicCrud({ title, description, addLabel, initialItems }
         <div>
             <div className="mb-5 flex items-start justify-between">
                 <div>
-                    <h2 className="text-[20px] font-bold text-[#1f2d5a]">{title}</h2>
-                    <p className="text-[13px] text-gray-500">{description}</p>
+                    <h2 className="text-[21.5px] font-bold text-[#1f2d5a]">{title}</h2>
+                    <p className="text-[14.5px] text-gray-500">{description}</p>
                 </div>
-                <button
+                <Button
+                    variant="contained"
                     onClick={openAdd}
-                    className="flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-[13px] font-bold text-white shadow-lg shadow-violet-100 transition hover:bg-violet-700 active:scale-95"
+                    startIcon={<Plus size={15} />}
+                    sx={{
+                        textTransform: "none",
+                        backgroundColor: "#7c3aed",
+                        color: "white",
+                        borderRadius: "12px",
+                        fontSize: "13px",
+                        fontWeight: "800",
+                        px: 3,
+                        py: 1.2,
+                        boxShadow: "0 10px 15px -3px rgba(124, 58, 237, 0.2)",
+                        "&:hover": {
+                            backgroundColor: "#6d28d9",
+                            boxShadow: "0 10px 15px -3px rgba(109, 40, 217, 0.3)"
+                        }
+                    }}
                 >
-                    <Plus size={15} />
                     {addLabel}
-                </button>
+                </Button>
+
             </div>
 
             <div className="rounded-[20px] border border-gray-100 bg-white p-5 shadow-sm">
@@ -63,23 +80,30 @@ export default function BasicCrud({ title, description, addLabel, initialItems }
                             className="flex items-center justify-between rounded-2xl border border-gray-100 bg-gray-50/50 p-4 transition hover:border-violet-200 hover:bg-violet-50/30"
                         >
                             <div>
-                                <p className="text-[14px] font-bold text-[#1f2d5a]">{item.name}</p>
-                                <p className="mt-0.5 text-[12px] text-gray-400">{item.note}</p>
+                                <p className="text-[15.5px] font-bold text-[#1f2d5a]">{item.name}</p>
+                                <p className="mt-0.5 text-[13.5px] text-gray-400">{item.note}</p>
                             </div>
-                            <div className="flex gap-1">
-                                <button
-                                    onClick={() => openEdit(item)}
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-violet-50 hover:text-violet-600"
-                                >
-                                    <Pencil size={14} />
-                                </button>
-                                <button
-                                    onClick={() => setItems((current) => current.filter((row) => row.id !== item.id))}
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-500"
-                                >
-                                    <Trash2 size={14} />
-                                </button>
+                             <div className="flex gap-1">
+                                <Tooltip title="Tahrirlash">
+                                    <IconButton
+                                        onClick={() => openEdit(item)}
+                                        size="small"
+                                        sx={{ color: "#9ca3af", "&:hover": { color: "#7c3aed", backgroundColor: "#f5f3ff" }, borderRadius: "8px" }}
+                                    >
+                                        <Pencil size={14} />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title="O'chirish">
+                                    <IconButton
+                                        onClick={() => setItems((current) => current.filter((row) => row.id !== item.id))}
+                                        size="small"
+                                        sx={{ color: "#9ca3af", "&:hover": { color: "#ef4444", backgroundColor: "#fef2f2" }, borderRadius: "8px" }}
+                                    >
+                                        <Trash2 size={14} />
+                                    </IconButton>
+                                </Tooltip>
                             </div>
+
                         </div>
                     ))}
                 </div>
@@ -98,53 +122,89 @@ export default function BasicCrud({ title, description, addLabel, initialItems }
             >
                 <div className="flex items-start justify-between border-b border-gray-50 px-6 pb-4 pt-6">
                     <div>
-                        <h3 className="text-[17px] font-bold text-gray-800">
+                        <h3 className="text-[18.5px] font-bold text-gray-800">
                             {editItem ? "Tahrirlash" : addLabel}
                         </h3>
-                        <p className="mt-0.5 text-[12.5px] text-gray-400">Ma'lumotlarni kiriting.</p>
+                        <p className="mt-0.5 text-[14px] text-gray-400">Ma'lumotlarni kiriting.</p>
                     </div>
-                    <button onClick={closeDrawer} className="text-gray-300 hover:text-gray-500">
+                    <IconButton onClick={closeDrawer} sx={{ color: "#9ca3af", "&:hover": { color: "#4b5563" } }}>
                         <X size={20} />
-                    </button>
+                    </IconButton>
+
                 </div>
 
                 <div className="flex-1 space-y-5 overflow-y-auto px-6 py-6">
                     <label className="block">
-                        <span className="mb-2 block text-[13px] font-semibold text-gray-700">
+                        <span className="mb-2 block text-[14.5px] font-semibold text-gray-700">
                             Nomi <span className="text-red-500">*</span>
                         </span>
                         <input
                             value={form.name}
                             onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
                             placeholder="Nomini kiriting"
-                            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-[13px] text-gray-700 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-50"
+                            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-[14.5px] text-gray-700 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-50"
                         />
                     </label>
                     <label className="block">
-                        <span className="mb-2 block text-[13px] font-semibold text-gray-700">Izoh</span>
+                        <span className="mb-2 block text-[14.5px] font-semibold text-gray-700">Izoh</span>
                         <textarea
                             value={form.note}
                             onChange={(event) => setForm((current) => ({ ...current, note: event.target.value }))}
                             placeholder="Qo'shimcha izoh"
-                            className="min-h-[96px] w-full resize-none rounded-xl border border-gray-200 px-4 py-2.5 text-[13px] text-gray-700 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-50"
+                            className="min-h-[96px] w-full resize-none rounded-xl border border-gray-200 px-4 py-2.5 text-[14.5px] text-gray-700 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-50"
                         />
                     </label>
                 </div>
 
                 <div className="flex gap-3 border-t border-gray-100 px-6 py-5">
-                    <button
+                    <Button
                         onClick={closeDrawer}
-                        className="flex-1 rounded-xl border border-gray-200 py-3 text-[13px] font-semibold text-gray-500 transition hover:bg-gray-50"
+                        variant="outlined"
+                        fullWidth
+                        sx={{
+                            textTransform: "none",
+                            height: 40,
+                            borderRadius: "12px",
+                            borderColor: "#e5e7eb",
+                            fontSize: "13px",
+                            fontWeight: "800",
+                            color: "#4b5563",
+                            "&:hover": {
+                                backgroundColor: "#f9fafb",
+                                borderColor: "#d1d5db"
+                            }
+                        }}
                     >
                         Bekor qilish
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         onClick={saveItem}
+                        variant="contained"
                         disabled={!form.name.trim()}
-                        className="flex-1 rounded-xl bg-violet-600 py-3 text-[13px] font-bold text-white shadow-lg shadow-violet-100 transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none"
+                        fullWidth
+                        sx={{
+                            textTransform: "none",
+                            height: 40,
+                            borderRadius: "12px",
+                            backgroundColor: "#7c3aed",
+                            color: "white",
+                            fontSize: "13px",
+                            fontWeight: "800",
+                            boxShadow: "0 10px 15px -3px rgba(124, 58, 237, 0.2)",
+                            "&:hover": {
+                                backgroundColor: "#6d28d9",
+                                boxShadow: "0 10px 15px -3px rgba(109, 40, 217, 0.3)"
+                            },
+                            "&:disabled": {
+                                backgroundColor: "#f3f4f6",
+                                color: "#9ca3af",
+                                boxShadow: "none"
+                            }
+                        }}
                     >
                         Saqlash
-                    </button>
+                    </Button>
+
                 </div>
             </aside>
         </div>

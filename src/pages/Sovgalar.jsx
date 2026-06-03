@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react"
 import { Gift, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react"
+import { Button, IconButton, Tooltip } from "@mui/material"
 
 const initialGifts = [
     { id: 1, name: "Notebook", coins: 120, imageName: "" },
@@ -70,20 +71,36 @@ export default function Sovgalar() {
         <div className="-m-6 min-h-full bg-[#f4f6fb] p-8">
             <div className="mb-6 flex items-start justify-between">
                 <div>
-                    <h1 className="text-[26px] font-extrabold tracking-tight text-[#1f2d5a]">
+                    <h1 className="text-[27.5px] font-extrabold tracking-tight text-[#1f2d5a]">
                         Sovg'alar
                     </h1>
-                    <p className="mt-1 text-[13.5px] text-gray-400">
+                    <p className="mt-1 text-[15px] text-gray-400">
                         Talabalar coin orqali olishi mumkin bo'lgan sovg'alar ro'yxati.
                     </p>
                 </div>
-                <button
+                <Button
+                    variant="contained"
                     onClick={openAdd}
-                    className="flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-[13px] font-bold text-white shadow-lg shadow-violet-100 transition hover:bg-violet-700 active:scale-95"
+                    startIcon={<Plus size={16} />}
+                    sx={{
+                        textTransform: "none",
+                        backgroundColor: "#7c3aed",
+                        color: "white",
+                        borderRadius: "12px",
+                        fontSize: "13px",
+                        fontWeight: "800",
+                        px: 3,
+                        py: 1.2,
+                        boxShadow: "0 10px 15px -3px rgba(124, 58, 237, 0.2)",
+                        "&:hover": {
+                            backgroundColor: "#6d28d9",
+                            boxShadow: "0 10px 15px -3px rgba(109, 40, 217, 0.3)"
+                        }
+                    }}
                 >
-                    <Plus size={16} />
                     Sovg'a qo'shish
-                </button>
+                </Button>
+
             </div>
 
             <div className="mb-5 flex justify-end">
@@ -93,7 +110,7 @@ export default function Sovgalar() {
                         value={query}
                         onChange={(event) => setQuery(event.target.value)}
                         placeholder="Search"
-                        className="w-[280px] rounded-xl border border-gray-100 bg-white py-2.5 pl-10 pr-4 text-[13px] text-[#1f2d5a] shadow-sm outline-none focus:border-violet-300"
+                        className="w-[280px] rounded-xl border border-gray-100 bg-white py-2.5 pl-10 pr-4 text-[14.5px] text-[#1f2d5a] shadow-sm outline-none focus:border-violet-300"
                     />
                 </div>
             </div>
@@ -106,32 +123,56 @@ export default function Sovgalar() {
                         </div>
                         <div className="flex items-start justify-between gap-3">
                             <div>
-                                <h3 className="text-[15px] font-extrabold text-[#1f2d5a]">{gift.name}</h3>
-                                <p className="mt-1 text-[13px] font-bold text-orange-500">{gift.coins} coin</p>
+                                <h3 className="text-[16.5px] font-extrabold text-[#1f2d5a]">{gift.name}</h3>
+                                <p className="mt-1 text-[14.5px] font-bold text-orange-500">{gift.coins} coin</p>
                                 {gift.imageName && (
-                                    <p className="mt-1 max-w-[220px] truncate text-[12px] text-gray-400">
+                                    <p className="mt-1 max-w-[220px] truncate text-[13.5px] text-gray-400">
                                         {gift.imageName}
                                     </p>
                                 )}
                             </div>
-                            <div className="flex gap-1">
-                                <button
-                                    onClick={() => openEdit(gift)}
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-violet-50 hover:text-violet-600"
-                                >
-                                    <Pencil size={15} />
-                                </button>
-                                <button
-                                    onClick={() => setGifts((current) => current.filter((item) => item.id !== gift.id))}
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-500"
-                                >
-                                    <Trash2 size={15} />
-                                </button>
+                             <div className="flex gap-1">
+                                <Tooltip title="Tahrirlash">
+                                    <IconButton
+                                        onClick={() => openEdit(gift)}
+                                        size="small"
+                                        sx={{ color: "#9ca3af", "&:hover": { color: "#7c3aed", backgroundColor: "#f5f3ff" }, borderRadius: "8px" }}
+                                    >
+                                        <Pencil size={15} />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title="O'chirish">
+                                    <IconButton
+                                        onClick={() => setGifts((current) => current.filter((item) => item.id !== gift.id))}
+                                        size="small"
+                                        sx={{ color: "#9ca3af", "&:hover": { color: "#ef4444", backgroundColor: "#fef2f2" }, borderRadius: "8px" }}
+                                    >
+                                        <Trash2 size={15} />
+                                    </IconButton>
+                                </Tooltip>
                             </div>
+
                         </div>
                     </div>
                 ))}
             </div>
+            {filteredGifts.length === 0 && (
+                <div className="mt-4 flex flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white px-6 py-16 text-center shadow-sm">
+                    <p className="text-[16.5px] font-extrabold text-[#1f2d5a]">Sovg'a topilmadi.</p>
+                    <p className="mt-1 text-[14.5px] text-gray-400">
+                        Qidiruv natija bermadi. Qidiruvni tozalab barcha sovg'alarni ko'ring.
+                    </p>
+                    {query.trim() && (
+                        <Button
+                            onClick={() => setQuery("")}
+                            variant="outlined"
+                            sx={{ mt: 2, textTransform: "none", borderRadius: "12px", fontSize: "13px", fontWeight: "800", borderColor: "#e5e7eb", color: "#4b5563" }}
+                        >
+                            Qidiruvni tozalash
+                        </Button>
+                    )}
+                </div>
+            )}
 
             <div
                 onClick={closeDrawer}
@@ -146,40 +187,41 @@ export default function Sovgalar() {
             >
                 <div className="flex items-start justify-between px-6 pb-4 pt-6">
                     <div>
-                        <h3 className="text-[17px] font-bold text-gray-800">
+                        <h3 className="text-[18.5px] font-bold text-gray-800">
                             {editGift ? "Sovg'ani tahrirlash" : "Sovg'a qo'shish"}
                         </h3>
-                        <p className="mt-0.5 text-[12.5px] text-gray-400">
+                        <p className="mt-0.5 text-[14px] text-gray-400">
                             Sovg'a nomi, coin narxi va rasmini kiriting.
                         </p>
                     </div>
-                    <button onClick={closeDrawer} className="text-gray-300 hover:text-gray-500">
+                    <IconButton onClick={closeDrawer} sx={{ color: "#9ca3af", "&:hover": { color: "#4b5563" } }}>
                         <X size={20} />
-                    </button>
+                    </IconButton>
+
                 </div>
 
                 <div className="flex-1 space-y-5 overflow-y-auto px-6 py-4">
                     <label className="block">
-                        <span className="mb-1.5 block text-[13px] font-semibold text-gray-700">Nomi</span>
+                        <span className="mb-1.5 block text-[14.5px] font-semibold text-gray-700">Nomi</span>
                         <input
                             value={form.name}
                             onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
                             placeholder="Sovg'a nomi"
-                            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-[13px] outline-none focus:border-violet-400"
+                            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-[14.5px] outline-none focus:border-violet-400"
                         />
                     </label>
                     <label className="block">
-                        <span className="mb-1.5 block text-[13px] font-semibold text-gray-700">Coin narxi</span>
+                        <span className="mb-1.5 block text-[14.5px] font-semibold text-gray-700">Coin narxi</span>
                         <input
                             type="number"
                             value={form.coins}
                             onChange={(event) => setForm((current) => ({ ...current, coins: event.target.value }))}
                             placeholder="Masalan: 120"
-                            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-[13px] outline-none focus:border-violet-400"
+                            className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-[14.5px] outline-none focus:border-violet-400"
                         />
                     </label>
                     <label className="block">
-                        <span className="mb-1.5 block text-[13px] font-semibold text-gray-700">Surati</span>
+                        <span className="mb-1.5 block text-[14.5px] font-semibold text-gray-700">Surati</span>
                         <span className="flex min-h-[150px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-100 bg-gray-50/30 p-8 text-center hover:bg-gray-50">
                             <input
                                 type="file"
@@ -188,28 +230,63 @@ export default function Sovgalar() {
                                 className="hidden"
                             />
                             <Upload size={20} className="mb-2 text-gray-400" />
-                            <span className="max-w-[260px] truncate text-[12px] font-semibold text-gray-600">
+                            <span className="max-w-[260px] truncate text-[13.5px] font-semibold text-gray-600">
                                 {form.imageName || "Click to upload or drag and drop"}
                             </span>
-                            <span className="mt-1 text-[11px] text-gray-400">JPG or PNG (max. 2 MB)</span>
+                            <span className="mt-1 text-[12.5px] text-gray-400">JPG or PNG (max. 2 MB)</span>
                         </span>
                     </label>
                 </div>
 
                 <div className="mt-auto flex justify-end gap-3 border-t border-gray-50 px-6 py-6">
-                    <button
+                    <Button
                         onClick={closeDrawer}
-                        className="rounded-xl border border-gray-100 px-6 py-2.5 text-[13px] font-bold text-gray-500 hover:bg-gray-50"
+                        variant="outlined"
+                        sx={{
+                            textTransform: "none",
+                            height: 40,
+                            borderRadius: "12px",
+                            borderColor: "#f3f4f6",
+                            fontSize: "13px",
+                            fontWeight: "800",
+                            color: "#4b5563",
+                            px: 3,
+                            "&:hover": {
+                                backgroundColor: "#f9fafb",
+                                borderColor: "#e5e7eb"
+                            }
+                        }}
                     >
                         Bekor qilish
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         onClick={saveGift}
+                        variant="contained"
                         disabled={!form.name.trim() || !form.coins}
-                        className="rounded-xl bg-violet-600 px-6 py-2.5 text-[13px] font-bold text-white shadow-lg transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none"
+                        sx={{
+                            textTransform: "none",
+                            height: 40,
+                            borderRadius: "12px",
+                            backgroundColor: "#7c3aed",
+                            color: "white",
+                            fontSize: "13px",
+                            fontWeight: "800",
+                            px: 3,
+                            boxShadow: "0 10px 15px -3px rgba(124, 58, 237, 0.2)",
+                            "&:hover": {
+                                backgroundColor: "#6d28d9",
+                                boxShadow: "0 10px 15px -3px rgba(109, 40, 217, 0.3)"
+                            },
+                            "&:disabled": {
+                                backgroundColor: "#f3f4f6",
+                                color: "#9ca3af",
+                                boxShadow: "none"
+                            }
+                        }}
                     >
                         Saqlash
-                    </button>
+                    </Button>
+
                 </div>
             </aside>
         </div>

@@ -1,21 +1,83 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import api from "../api"
+import { Snackbar, Alert, Button } from "@mui/material"
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
-  const [login, setLogin] = useState("")
+  const [phone, setPhone] = useState("")
   const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  
+  // Snackbar states
+  const [openSnackbar, setOpenSnackbar] = useState(false)
+  const [snackbarMessage, setSnackbarMessage] = useState("")
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success") // 'success' yoki 'error'
 
   const navigate = useNavigate()
 
-  const handleLogin = (e) => {
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setOpenSnackbar(false)
+  }
+
+  const handleLogin = async (e) => {
     e.preventDefault()
-    localStorage.setItem("token", "logged")
-    navigate("/dashboard")
+    setLoading(true)
+    
+    try {
+      const response = await api.post("/auth/login", {
+        phone,
+        password
+      })
+
+      const token = response.data?.accessToken
+      
+      if (token) {
+        localStorage.setItem("token", token)
+        setSnackbarSeverity("success")
+        setSnackbarMessage("Tizimga muvaffaqiyatli kirdingiz!")
+        setOpenSnackbar(true)
+        
+        // Biroz kutib keyin dashboardga o'tkazish (Alert ko'rinishi uchun)
+        setTimeout(() => {
+          navigate("/dashboard")
+        }, 1500)
+      } else {
+        setSnackbarSeverity("error")
+        setSnackbarMessage("Token qaytarilmadi!")
+        setOpenSnackbar(true)
+      }
+    } catch (err) {
+      console.error("Login xatosi:", err)
+      setSnackbarSeverity("error")
+      setSnackbarMessage("Parol yoki login xato")
+      setOpenSnackbar(true)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <div className="w-screen h-screen flex overflow-hidden">
+
+      <Snackbar 
+        open={openSnackbar} 
+        autoHideDuration={4000} 
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbarSeverity} 
+          sx={{ width: '100%', fontSize: '15px' }}
+          variant="filled"
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
 
       <div className="hidden md:flex w-1/2 h-full bg-[#1f2d5a] items-center justify-center relative overflow-hidden">
         <div className="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-white/5" />
@@ -32,7 +94,7 @@ export default function Login() {
         <div className="w-full max-w-[360px]">
 
           <div className="text-center mb-10">
-            <p className="text-[10px] font-semibold text-[#1f2d5a] tracking-widest uppercase leading-relaxed">
+            <p className="text-[11.5px] font-semibold text-[#1f2d5a] tracking-widest uppercase leading-relaxed">
               Muhammad al-Xorazmiy nomidagi
               <br />
               Toshkent Axborot Texnologiyalari
@@ -46,7 +108,7 @@ export default function Login() {
               className="w-16 h-16 mx-auto my-4 object-contain"
             />
 
-            <h2 className="text-[13px] font-bold text-[#1f2d5a] tracking-[0.2em] uppercase">
+            <h2 className="text-[14.5px] font-bold text-[#1f2d5a] tracking-[0.2em] uppercase">
               Learning Management System
             </h2>
           </div>
@@ -54,22 +116,22 @@ export default function Login() {
           <form onSubmit={handleLogin} className="space-y-5">
 
             <div>
-              <label className="block text-[11px] font-semibold text-gray-500 tracking-widest uppercase mb-2">
+              <label className="block text-[12.5px] font-semibold text-gray-500 tracking-widest uppercase mb-2">
                 Login
               </label>
 
               <input
                 type="text"
                 required
-                value={login}
-                onChange={(e) => setLogin(e.target.value)}
-                placeholder="Loginni kiriting"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-[14px] text-gray-800 placeholder:text-gray-300 outline-none focus:border-[#1f2d5a] focus:bg-white focus:ring-2 focus:ring-[#1f2d5a]/10 transition-all"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Login (telefon raqam) ni kiriting"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-[15.5px] text-gray-800 placeholder:text-gray-300 outline-none focus:border-[#1f2d5a] focus:bg-white focus:ring-2 focus:ring-[#1f2d5a]/10 transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-gray-500 tracking-widest uppercase mb-2">
+              <label className="block text-[12.5px] font-semibold text-gray-500 tracking-widest uppercase mb-2">
                 Parol
               </label>
 
@@ -80,7 +142,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Parolni kiriting"
-                  className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 bg-gray-50 text-[14px] text-gray-800 placeholder:text-gray-300 outline-none focus:border-[#1f2d5a] focus:bg-white focus:ring-2 focus:ring-[#1f2d5a]/10 transition-all"
+                  className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 bg-gray-50 text-[15.5px] text-gray-800 placeholder:text-gray-300 outline-none focus:border-[#1f2d5a] focus:bg-white focus:ring-2 focus:ring-[#1f2d5a]/10 transition-all"
                 />
 
                 <button
@@ -122,15 +184,36 @@ export default function Login() {
               </div>
             </div>
 
-            <button
+            <Button
               type="submit"
-              className="w-full py-3 rounded-xl bg-[#1f2d5a] text-white font-medium hover:opacity-90 active:scale-[0.99] transition-all"
+              disabled={loading}
+              variant="contained"
+              fullWidth
+              sx={{
+                textTransform: "none",
+                py: 1.5,
+                borderRadius: "12px",
+                backgroundColor: "#1f2d5a",
+                color: "white",
+                fontSize: "14px",
+                fontWeight: "500",
+                boxShadow: "none",
+                "&:hover": {
+                  backgroundColor: "#2a3d7a",
+                  boxShadow: "none"
+                },
+                "&:disabled": {
+                  backgroundColor: "#1f2d5a",
+                  opacity: 0.7,
+                  color: "white"
+                }
+              }}
             >
-              Kirish
-            </button>
+              {loading ? "Kirilmoqda..." : "Kirish"}
+            </Button>
           </form>
 
-          <p className="text-center text-[11px] text-gray-300 mt-10">
+          <p className="text-center text-[12.5px] text-gray-300 mt-10">
             © 2021 Tashkent University of Information Technologies
           </p>
         </div>
