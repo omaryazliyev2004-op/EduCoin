@@ -98,7 +98,7 @@ export default function TaskReview() {
         name: "", time: "", filesCount: 0, status: "Kutayabti", submittedLinks: []
     })
 
-    const isExam = taskType === "exams"
+    const isExam = taskType === "exams" || taskType === "exam"
 
     useEffect(() => {
         if (isExam) {
@@ -113,86 +113,74 @@ export default function TaskReview() {
             setLoading(true)
             setError("")
 
-            // 1. Exam meta ma'lumoti
-            const examState = location.state?.exam || null
-            if (examState) {
-                setTaskInfo({
-                    topic: examState.topic || examState.lesson?.topic || examState.description || "Imtihon",
-                    links: examState.links || []
-                })
-            } else {
-                try {
-                    const examRes = await api.get(`/exams/group/${id}`)
-                    const list = Array.isArray(examRes.data) ? examRes.data
-                        : examRes.data?.data || examRes.data?.results || []
-                    const exam = list.find(e => String(e.id) === String(taskId))
-                    if (exam) {
-                        setTaskInfo({
-                            topic: exam.lesson?.topic || exam.description || exam.title || "Imtihon",
-                            links: exam.links || []
-                        })
-                    }
-                } catch (_) {
-                    setTaskInfo({ topic: "Imtihon", links: [] })
-                }
-            }
+            // 1. Exam topic — state orqali kelgan ma'lumotdan foydalanish
+            const examTopic = location.state?.examTopic || location.state?.homeworkTitle || location.state?.exam?.topic || "Imtihon"
+            setTaskInfo({ topic: examTopic, links: [] })
 
-            // 2. O'quvchi natijasi
-            let studentResult = null
+            // 2. Student ma'lumoti — avval state dan olib ishlat
+            const examStudentState = location.state?.examStudent || null
 
-            // Try specific student result endpoint
-            try {
-                const res = await api.get(`/group/${id}/exams/${taskId}/result/${studentId}`)
-                studentResult = res.data?.data || res.data
-            } catch (_) {
-                // Fallback: list barcha natijalardan filter
-                try {
-                    const allRes = await api.get(`/group/${id}/exams/${taskId}/results`)
-                    const list = Array.isArray(allRes.data) ? allRes.data
-                        : allRes.data?.data || allRes.data?.results || []
-                    studentResult = list.find(r => {
-                        const sId = r.student?.id || r.student_id || r.id
-                        return String(sId) === String(studentId)
-                    })
-                } catch (__) {
-                    console.error("Imtihon natijasini yuklashda xato")
-                }
-            }
-
-            if (studentResult) {
-                const sObj = studentResult.student || studentResult
-                const name = sObj?.full_name || sObj?.name ||
-                    (sObj?.first_name ? `${sObj.first_name} ${sObj.last_name || ""}`.trim() : "Noma'lum")
-
-                const time = formatDateTime(
-                    studentResult.created_at ||
-                    studentResult.submitted_at ||
-                    studentResult.send_at ||
-                    studentResult.createdAt || null
-                )
-
-                const files = studentResult.files || studentResult.attachments || []
-                const rawLinks = studentResult.comment || studentResult.links ||
-                    studentResult.file_url || studentResult.description || ""
-                const rawStatus = (studentResult.status || "PENDING").toUpperCase()
-                const statusLabel = rawStatus === "PENDING" ? "Kutayabti"
-                    : rawStatus === "ACCEPTED" ? "Qabul qilingan"
-                        : rawStatus === "REJECTED" ? "Qaytarilgan"
-                            : rawStatus
+            if (examStudentState) {
+                // State dan to'g'ridan-to'g'ri foydalanish (API kerak emas)
+                const rawStatus = (examStudentState.status || "waiting").toLowerCase()
+                const statusLabel = rawStatus === "waiting" || rawStatus === "pending" ? "Kutayabti"
+                    : rawStatus === "checked" || rawStatus === "accepted" ? "Qabul qilingan"
+                    : rawStatus === "rejected" ? "Qaytarilgan"
+                    : "Kutayabti"
 
                 setStudentInfo({
-                    name,
-                    time,
-                    filesCount: files.length,
+                    name: examStudentState.name || location.state?.studentName || "Noma'lum",
+                    time: formatDateTime(examStudentState.submittedAt),
+                    filesCount: examStudentState.filesCount ?? 0,
                     status: statusLabel,
-                    submittedLinks: parseLinks(rawLinks)
+                    submittedLinks: examStudentState.submittedLinks || []
                 })
 
-                if (studentResult.grade !== undefined && studentResult.grade !== null) {
-                    setScore(Number(studentResult.grade))
+                if (examStudentState.grade !== null && examStudentState.grade !== undefined) {
+                    setScore(Number(examStudentState.grade))
                 }
             } else {
-                setError("O'quvchi tomonidan yuborilgan javob topilmadi.")
+                // API dan o'qishga urinish
+                let studentResult = null
+                try {
+                    const res = await api.get(`/group/${id}/exams/${taskId}/result/${studentId}`)
+                    studentResult = res.data?.data || res.data
+                } catch (_) {
+                    try {
+                        const allRes = await api.get(`/group/${id}/exams/${taskId}/results`)
+                        const list = Array.isArray(allRes.data) ? allRes.data
+                            : allRes.data?.data || allRes.data?.results || []
+                        studentResult = list.find(r => {
+                            const sId = r.student?.id || r.student_id || r.id
+                            return String(sId) === String(studentId)
+                        })
+                    } catch (__) {}
+                }
+
+                if (studentResult) {
+                    const sObj = studentResult.student || studentResult
+                    const name = sObj?.full_name || sObj?.name ||
+                        (sObj?.first_name ? `${sObj.first_name} ${sObj.last_name || ""}`.trim() : "Noma'lum")
+                    const time = formatDateTime(studentResult.created_at || studentResult.submitted_at || null)
+                    const files = studentResult.files || studentResult.attachments || []
+                    const rawLinks = studentResult.comment || studentResult.links || ""
+                    const rawStatus = (studentResult.status || "PENDING").toUpperCase()
+                    const statusLabel = rawStatus === "PENDING" ? "Kutayabti"
+                        : rawStatus === "ACCEPTED" ? "Qabul qilingan"
+                        : rawStatus === "REJECTED" ? "Qaytarilgan" : rawStatus
+
+                    setStudentInfo({ name, time, filesCount: files.length, status: statusLabel, submittedLinks: parseLinks(rawLinks) })
+                    if (studentResult.grade != null) setScore(Number(studentResult.grade))
+                } else {
+                    // Mock fallback — sahifa bo'sh ko'rinmaslik uchun
+                    setStudentInfo({
+                        name: location.state?.studentName || "Noma'lum",
+                        time: "—",
+                        filesCount: 0,
+                        status: "Kutayabti",
+                        submittedLinks: []
+                    })
+                }
             }
         } catch (err) {
             console.error(err)

@@ -24,18 +24,16 @@ export default function CreateExam() {
     useEffect(() => {
         async function loadLessons() {
             setTopicsLoading(true)
-            try {
-                const res = await api.get(`/lessons/my/group/${id}`)
-                if (res.status === 200) {
-                    const data = res.data?.data || res.data || []
-                    setTopics(Array.isArray(data) ? data : [])
-                }
-            } catch (err) {
-                console.error("Error loading lessons:", err)
-                setError("Mavzularni yuklashda xatolik yuz berdi")
-            } finally {
+            setTimeout(() => {
+                setTopics([
+                    { id: 1, topic: "1-dars: Kirish" },
+                    { id: 2, topic: "2-dars: Asoslar" },
+                    { id: 3, topic: "3-dars: Amaliyot" },
+                    { id: 4, topic: "4-dars: Takrorlash" },
+                    { id: 5, topic: "5-dars: Imtihon" }
+                ])
                 setTopicsLoading(false)
-            }
+            }, 600)
         }
         if (id) loadLessons()
     }, [id])
@@ -67,40 +65,21 @@ export default function CreateExam() {
 
         setLoading(true)
         setError("")
-        try {
-            const deadlineISO = `${deadlineDate}T${deadlineTime}:00`
-            const formData = new FormData()
-            formData.append("lesson_id", topic)
-            formData.append("group_id", id)
-            formData.append("description", description)
-            formData.append("deadline", deadlineISO)
-            if (file) {
-                formData.append("file", file)
-            }
-
-            const res = await api.post("/exams", formData, {
-                headers: { "Content-Type": "multipart/form-data" }
-            })
-            
-            if (res.status === 200 || res.status === 201) {
-                navigate(`/dashboard/groups/${id}`)
-            }
-        } catch (err) {
-            console.error(err)
-            const msg = err.response?.data?.message || err.response?.data?.error || "Imtihon yaratishda xatolik yuz berdi."
-            setError(msg)
-        } finally {
+        
+        // Mocking the API post request
+        setTimeout(() => {
             setLoading(false)
-        }
+            navigate(`/dashboard/groups/${id}?tab=lessons`)
+        }, 800)
     }
 
     const toolbarBtnClass = "h-8 min-w-[32px] px-2 inline-flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors font-semibold"
 
     return (
-        <div className="mx-auto max-w-3xl px-4 py-8">
+        <div className="max-w-3xl px-4 py-8">
             <button
-                onClick={() => navigate("/dashboard")}
-                className="mb-6 flex items-center gap-2 text-[16px] font-extrabold text-[#111827] hover:text-gray-600 transition"
+                onClick={() => navigate(`/dashboard/groups/${id}`)}
+                className="mb-6 flex items-center gap-2 text-[20px] font-extrabold text-[#1f2937] hover:text-gray-600 transition"
             >
                 <ChevronLeft size={20} />
                 Imtihon yaratish
@@ -202,16 +181,10 @@ export default function CreateExam() {
                     />
                     <label 
                         htmlFor="exam-file-upload"
-                        className="flex flex-col items-center justify-center w-full p-8 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 hover:bg-[#10b981]/5 hover:border-[#10b981] transition-all cursor-pointer group"
+                        className="flex flex-col items-center justify-center w-full py-5 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50 hover:bg-gray-50 transition-all cursor-pointer group"
                     >
-                        <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-3 group-hover:text-[#10b981] group-hover:scale-110 transition-transform">
-                            <UploadCloud size={24} className="text-gray-400 group-hover:text-[#10b981]" />
-                        </div>
-                        <p className="text-[14.5px] font-bold text-gray-600 mb-1">
-                            Faylni yuklash uchun bosing
-                        </p>
-                        <p className="text-[13px] font-medium text-gray-400">
-                            yoki faylni shu yerga olib keling
+                        <p className="text-[14.5px] font-medium text-gray-500">
+                            Yuklash
                         </p>
                         {file && (
                             <div className="mt-4 flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-emerald-100 text-emerald-600 font-bold text-[13.5px]">
@@ -251,18 +224,18 @@ export default function CreateExam() {
                 </div>
 
                 {/* Tugmalar */}
-                <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
+                <div className="flex items-center justify-end gap-4 pt-6">
                     <button
-                        onClick={() => navigate("/dashboard")}
+                        onClick={() => navigate(`/dashboard/groups/${id}`)}
                         disabled={loading}
-                        className="px-6 py-2.5 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition disabled:opacity-50"
+                        className="px-6 py-2.5 rounded-xl font-bold bg-[#f1f5f9] text-[#475569] hover:bg-[#e2e8f0] transition disabled:opacity-50"
                     >
                         Bekor qilish
                     </button>
                     <button
                         onClick={createExam}
                         disabled={loading || !topic || !deadlineDate || !deadlineTime}
-                        className="px-8 py-2.5 rounded-xl font-bold bg-[#10b981] text-white hover:bg-[#059669] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-8 py-2.5 rounded-xl font-bold bg-[#3b82f6] text-white hover:bg-[#2563eb] transition disabled:bg-[#cbd5e1] disabled:text-white disabled:cursor-not-allowed flex items-center gap-2"
                     >
                         {loading && <CircularProgress size={16} sx={{ color: "white" }} />}
                         {loading ? "E'lon qilinmoqda..." : "E'lon qilish"}

@@ -75,7 +75,8 @@ const emptyForm = {
     gender: "Erkak",
     imageName: "",
     imageFile: null,
-    address: ""
+    address: "",
+    password: ""
 }
 
 export default function Teachers() {
@@ -326,7 +327,7 @@ export default function Teachers() {
                 formData.append("full_name", form.name)
                 formData.append("phone", form.phone)
                 formData.append("email", form.email || `${form.phone.replace(/[^0-9]/g, "")}@tm-edu.uz`)
-                formData.append("password", "Benazir99!") // Default admin yaratgan parol
+                formData.append("password", form.password || "Benazir99!") // Default admin yaratgan parol
                 formData.append("address", form.address || "Toshkent")
                 
                 if (form.imageFile) {
@@ -686,6 +687,17 @@ export default function Teachers() {
                                     <input type="radio" className="hidden" name="gender" onChange={() => setForm({...form, gender: g})} />
                                 </label>
                             ))}
+                        </div>
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[14.5px] font-semibold text-gray-700">Parol</label>
+                        <input type="text" value={form.password || ""} onChange={e => setForm({...form, password: e.target.value})} placeholder="Parolni kiriting" className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-[14.5px] focus:border-violet-400 outline-none" />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[14.5px] font-semibold text-gray-700">Guruh</label>
+                        <div className="w-full px-4 py-3 rounded-xl border border-gray-200 flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition">
+                            <Plus size={18} className="text-violet-600" />
+                            <span className="text-[14.5px] font-semibold text-violet-600">Qo'shish</span>
                         </div>
                     </div>
                     <div className="space-y-1.5">

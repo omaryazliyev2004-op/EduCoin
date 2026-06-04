@@ -193,7 +193,7 @@ export default function HomeworkChecking() {
                                 <thead>
                                     <tr className="border-b border-gray-100 text-[14.5px] font-bold text-gray-400">
                                         <th className="px-4 py-3 pb-4">O'quvchi ismi</th>
-                                        <th className="px-4 py-3 pb-4">Uyga vazifa jo'natilgan vaqt</th>
+                                        <th className="px-4 py-3 pb-4">Topshirilgan vaqt</th>
                                     </tr>
                                 </thead>
                                 <tbody>
