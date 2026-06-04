@@ -129,7 +129,8 @@ export default function Students() {
                     ? new Date(s.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.')
                     : "12.05.2026",
                 coins: s.coins || "0",
-                address: s.address || "Tashkent"
+                address: s.address || "Tashkent",
+                gender: s.gender === "FEMALE" ? "Ayol" : "Erkak"
             }))
 
             setStudents(mappedStudents)
@@ -236,6 +237,7 @@ export default function Students() {
             phone: student.phone,
             email: student.email || `${student.phone.replace(/[^0-9]/g, "")}@tm-edu.uz`,
             birth: student.birth,
+            gender: student.gender,
             address: student.address
         })
         setShowDrawer(true)
@@ -307,6 +309,10 @@ export default function Students() {
                 formData.append("phone", form.phone)
                 formData.append("email", form.email || `${form.phone.replace(/[^0-9]/g, "")}@tm-edu.uz`)
                 formData.append("address", form.address || "Toshkent")
+                if (form.birth) {
+                    formData.append("birth_date", new Date(form.birth).toISOString())
+                }
+                formData.append("gender", form.gender === "Erkak" ? "MALE" : "FEMALE")
                 
                 if (form.imageFile) {
                     formData.append("photo", form.imageFile)
@@ -324,6 +330,10 @@ export default function Students() {
                 formData.append("email", form.email || `${form.phone.replace(/[^0-9]/g, "")}@tm-edu.uz`)
                 formData.append("password", "Student123!") 
                 formData.append("address", form.address || "Toshkent")
+                if (form.birth) {
+                    formData.append("birth_date", new Date(form.birth).toISOString())
+                }
+                formData.append("gender", form.gender === "Erkak" ? "MALE" : "FEMALE")
                 
                 if (form.imageFile) {
                     formData.append("photo", form.imageFile)
