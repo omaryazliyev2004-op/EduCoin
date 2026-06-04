@@ -133,7 +133,7 @@ export default function Sidebar() {
 
             <button
                 onClick={() => setCollapsed(!collapsed)}
-                className="absolute -right-4 top-[51px] w-8 h-8 rounded-full bg-violet-600 hover:bg-violet-700 text-white flex items-center justify-center shadow-md shadow-violet-200 border border-violet-500/10 transition-all z-50 active:scale-90 cursor-pointer"
+                className="absolute -right-4 top-[51px] w-8 h-8 rounded-full bg-violet-600 hover:bg-violet-700 text-white flex items-center justify-center shadow-md shadow-violet-200 border border-violet-500/10 transition-all z-[300] active:scale-90 cursor-pointer"
             >
                 <ChevronLeft
                     size={18}
